@@ -43,7 +43,7 @@ int kv_put(kv_t *db, char *key, char *value) {
 				if (!newval) return -1;
 				entry->value = newval;
 				return real_idx;
-			}
+		}
 		//land in a slot that is "empty"
 		// null or tombstone
 		if (!entry->key || entry->key == (void*)TOMBSTONE) {
