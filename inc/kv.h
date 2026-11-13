@@ -9,9 +9,9 @@ typedef struct {
 } kv_entry_t;
 
 typedef struct {
+  kv_entry_t *entries;
   size_t capacity;
   size_t count;
-  kv_entry_t *entries;
 } kv_t;
 
 kv_t *kv_init(size_t capacity);

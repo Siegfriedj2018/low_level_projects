@@ -29,26 +29,17 @@ int kv_put(kv_t *db, char *key, char *value) {
 	if (!db || !key || !value) return -1;
 
 	size_t idx = hash(key, db->capacity);
+	ssize_t first_tombstone = -1;
 
-	for (int i = 0; i < db->capacity; i++) {
-
+	for (size_t i = 0; i < db->capacity; i++) {
 		size_t real_idx = (idx + i) % db->capacity;
 		kv_entry_t *entry = &db->entries[real_idx];
 
-		// the is already set, updating
-		if (entry->key &&
-		  entry->key != (void *)TOMBSTONE &&
-			!strcmp(entry->key, key)
-			) {
-				char *newval = strdup(value);
-				if (!newval) return -1;
-				free(entry->value);
-				entry->value = newval;
-				return real_idx;
-		}
-		//land in a slot that is "empty"
-		// null or tombstone
-		if (!entry->key || entry->key == (void*)TOMBSTONE) {
+		// Empty slot: key does not exist further down the chain
+		if (!entry->key) {
+			size_t target_idx = (first_tombstone != -1) ? (size_t)first_tombstone : real_idx;
+			kv_entry_t *target = &db->entries[target_idx];
+
 			char *newval = strdup(value);
 			char *newkey = strdup(key);
 			if (!newval || !newkey) {
@@ -56,14 +47,48 @@ int kv_put(kv_t *db, char *key, char *value) {
 				free(newval);
 				return -1;
 			}
-			entry->value = newval;
-			entry->key = newkey;
+			target->key = newkey;
+			target->value = newval;
 			db->count++;
+			return target_idx;
+		}
+
+		// Tombstone slot: record the first one seen and keep probing
+		if (entry->key == (void *)TOMBSTONE) {
+			if (first_tombstone == -1) {
+				first_tombstone = (ssize_t)real_idx;
+			}
+			continue;
+		}
+
+		// Key already exists: update value in place
+		if (!strcmp(entry->key, key)) {
+			char *newval = strdup(value);
+			if (!newval) return -1;
+			free(entry->value);
+			entry->value = newval;
 			return real_idx;
 		}
 	}
 
-	// the db is occupied
+	// Probed entire table without finding an empty slot or matching key,
+	// but saw a tombstone we can reuse
+	if (first_tombstone != -1) {
+		kv_entry_t *target = &db->entries[first_tombstone];
+		char *newval = strdup(value);
+		char *newkey = strdup(key);
+		if (!newval || !newkey) {
+			free(newkey);
+			free(newval);
+			return -1;
+		}
+		target->key = newkey;
+		target->value = newval;
+		db->count++;
+		return first_tombstone;
+	}
+
+	// Table is completely full
 	return -2;
 }
 
