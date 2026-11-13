@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-// #define TOMBSTONE 0x1
+#define TOMBSTONE 0x1
 
 size_t hash(char *val, int capacity) {
 	size_t hash = 0x13371337deadbeef;
