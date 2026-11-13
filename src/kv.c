@@ -29,7 +29,7 @@ int kv_put(kv_t *db, char *key, char *value) {
 	if (!db || !key || !value) return -1;
 
 	size_t idx = hash(key, db->capacity);
-	ssize_t first_tombstone = -1;
+	size_t first_tombstone = -1;
 
 	for (size_t i = 0; i < db->capacity; i++) {
 		size_t real_idx = (idx + i) % db->capacity;
