@@ -56,7 +56,7 @@ int kv_put(kv_t *db, const char *key, const char *value) {
 		}
 
 		// Tombstone slot: record the first one seen and keep probing
-		if (entry->key == TOMBSTONE) {
+		if (entry->key == (void*)TOMBSTONE) {
 			if (first_tombstone == -1) {
 				first_tombstone = (ssize_t)real_idx;
 			}
