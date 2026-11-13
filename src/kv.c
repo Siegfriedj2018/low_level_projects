@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define TOMBSTONE 0x1
+// #define TOMBSTONE 0x1
 
 size_t hash(char *val, int capacity) {
 	size_t hash = 0x13371337deadbeef;
@@ -25,7 +25,7 @@ size_t hash(char *val, int capacity) {
  *  - value: a pointer to the value itself
  * returns: the index of the key, otherwise on error returns -1, or db occupied -2
  */
-int kv_put(kv_t *db, char *key, char *value) {
+int kv_put(kv_t *db, const char *key, const char *value) {
 	if (!db || !key || !value) return -1;
 
 	size_t idx = hash(key, db->capacity);
@@ -37,8 +37,9 @@ int kv_put(kv_t *db, char *key, char *value) {
 
 		// the is already set, updating
 		if (entry->key &&
-			!strcmp(entry->key, key) &&
-			entry->key != (void *)TOMBSTONE) {
+		  entry->key != (void *)TOMBSTONE &&
+			!strcmp(entry->key, key)
+			) {
 				char *newval = strdup(value);
 				if (!newval) return -1;
 				entry->value = newval;
@@ -80,6 +81,7 @@ kv_t *kv_init(size_t capacity) {
 
 	table->entries = calloc(sizeof(kv_entry_t), capacity);
 	if (table->entries == NULL) {
+		free(table);
 		return NULL;
 	}
 
