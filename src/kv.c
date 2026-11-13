@@ -34,6 +34,7 @@ int kv_put(kv_t *db, char *key, char *value) {
 
 		size_t real_idx = (idx + i) % db->capacity;
 		kv_entry_t *entry = &db->entries[real_idx];
+
 		// the is already set, updating
 		if (entry->key &&
 			!strcmp(entry->key, key) &&
@@ -54,7 +55,7 @@ int kv_put(kv_t *db, char *key, char *value) {
 				return -1;
 			}
 			entry->value = newval;
-			entry->key = key;
+			entry->key = newkey;
 			db->count++;
 			return real_idx;
 		}
