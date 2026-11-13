@@ -1,13 +1,13 @@
+#define _POSIX_C_SOURCE 200809L
 #include <kv.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/types.h>
 
-#define TOMBSTONE 0x1
-
-size_t hash(char *val, int capacity) {
+size_t hash(const char *val, int capacity) {
 	size_t hash = 0x13371337deadbeef;
 
-	while(*val) {
+	while (*val) {
 		hash ^= *val;
 		hash = hash << 8;
 		hash += *val;
@@ -25,11 +25,11 @@ size_t hash(char *val, int capacity) {
  *  - value: a pointer to the value itself
  * returns: the index of the key, otherwise on error returns -1, or db occupied -2
  */
-int kv_put(kv_t *db, char *key, char *value) {
+int kv_put(kv_t *db, const char *key, const char *value) {
 	if (!db || !key || !value) return -1;
 
 	size_t idx = hash(key, db->capacity);
-	int first_tombstone = -1;
+	ssize_t first_tombstone = -1;
 
 	for (size_t i = 0; i < db->capacity; i++) {
 		size_t real_idx = (idx + i) % db->capacity;
@@ -54,7 +54,7 @@ int kv_put(kv_t *db, char *key, char *value) {
 		}
 
 		// Tombstone slot: record the first one seen and keep probing
-		if (entry->key == (void *)TOMBSTONE) {
+		if (entry->key == TOMBSTONE) {
 			if (first_tombstone == -1) {
 				first_tombstone = (ssize_t)real_idx;
 			}
