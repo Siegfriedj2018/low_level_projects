@@ -2,7 +2,7 @@
 #include <kv.h>
 
 int main() {
-  kv_t *table = kv_init(1024);
+  kv_t *table = kv_init(10);
 
   printf("%p\n", table);
   printf("%ld\n", table->capacity);
