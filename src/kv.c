@@ -6,8 +6,8 @@
 
 #define TOMBSTONE 0x1
 
-static int test[] = {5, 9, 7, 2};
-static int counter = 0;
+// static int test[] = {5, 9, 7, 2};
+// static int counter = 0;
 
 size_t hash( char *val, int capacity) {
 	size_t hash = 0x13371337deadbeef;
@@ -56,7 +56,7 @@ int kv_put(kv_t *db, char *key, char *value) {
 			target->value = newval;
 			db->count++;
 
-			return test[counter++];
+			return target_idx;
 		}
 
 		// Tombstone slot: record the first one seen and keep probing
@@ -73,7 +73,7 @@ int kv_put(kv_t *db, char *key, char *value) {
 			if (!newval) return -1;
 			free(entry->value);
 			entry->value = newval;
-			return test[counter++];
+			return real_idx;
 		}
 	}
 
@@ -91,7 +91,7 @@ int kv_put(kv_t *db, char *key, char *value) {
 		target->key = newkey;
 		target->value = newval;
 		db->count++;
-		return test[counter];
+		return first_tombstone;
 	}
 
 	// Table is completely full
